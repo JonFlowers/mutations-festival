@@ -37,7 +37,7 @@ function renderVenueMap(items){
   const bounds=[];
   shown.forEach(v=>{const name=v[0],[lat,lng,address]=venueLocations[name],n=venues.indexOf(v)+1;bounds.push([lat,lng]);
    const icon=L.divIcon({className:'festival-map-pin',html:`<span>${n}</span>`,iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-30]});
-   L.marker([lat,lng],{icon,title:name,alt:name,keyboard:true}).addTo(venueMap).bindPopup(`<div class="map-popup"><h3>${esc(name)}</h3><p>${esc(address)}</p><button class="map-schedule" data-map-schedule="${esc(name)}">See Saturday schedule →</button><p><a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(name+' '+address+' Brighton')}&travelmode=walking" target="_blank" rel="noopener">Walking directions ↗</a></p></div>`).bindTooltip(name,{direction:'top',offset:[0,-30]});
+   L.marker([lat,lng],{icon,title:name,alt:name,keyboard:true}).addTo(venueMap).bindPopup(`<div class="map-popup"><h3>${esc(name)}</h3><p>${esc(address)}</p><button class="map-schedule" data-map-schedule="${esc(name)}">See ${festivalDays[selectedDay].name} schedule →</button><p><a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(name+' '+address+' Brighton')}&travelmode=walking" target="_blank" rel="noopener">Walking directions ↗</a></p></div>`).bindTooltip(name,{direction:'top',offset:[0,-30]});
   });
   const fit=()=>{if(venueMap)venueMap.fitBounds(bounds,{padding:[35,35],maxZoom:17});};fit();$('#fitvenues').onclick=fit;
  }).catch(()=>{if(mode==='map'&&generation===mapGeneration&&$('#venue-map'))$('#venue-map').innerHTML='<p class="map-loading" role="status">The interactive map could not load. Use the venue addresses and walking directions below.</p>';});
