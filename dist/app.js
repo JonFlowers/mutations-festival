@@ -22,6 +22,9 @@ function card(a,showVenue=false){const isSaved=saved.has(a.id), overlap=isSaved?
 function filtered(){return acts.filter(a=>(venue==='all'||a.venue===venue)&&(`${a.name} ${a.venue}`.toLowerCase().includes(query))&&(mode!=='saved'||saved.has(a.id))&&(period==='all'||period==='pending'&&a.pending||!a.pending&&(period==='afternoon'&&minute(a.start)<1080||period==='evening'&&minute(a.start)>=1080&&minute(a.start)<1320||period==='late'&&minute(a.start)>=1320)));}
 function render(){
 clearVenueMap();
+$('#schedule-actions').hidden=mode!=='saved';
+$('#shared-plan').hidden=!sharedPreview;
+$('#share-schedule').disabled=!saved.size;
 const day=festivalDays[selectedDay];
 $('#hero-title').innerHTML='MUTATIONS<br>FESTIVAL.';
 $('#stamp-day').textContent=day.name.toUpperCase();$('#stamp-date').textContent=day.date+'.10';
@@ -36,7 +39,7 @@ const items=mode==='saved'?acts.filter(a=>saved.has(a.id)):filtered();
 $('.tools').hidden=mode==='saved';
 $('#mobilevenue').hidden=mode==='saved';$('#savedcount').textContent=allActs.filter(a=>saved.has(a.id)).length;
 $('#viewtitle').textContent=mode==='map'?'Find your way around':mode==='saved'?'My Schedule':mode==='time'?'From first set to last':venue==='all'?`The ${festivalDays[selectedDay].name} lineup`:venue;
-$('#resultcount').textContent=`${items.length} sets · ${new Set(items.map(x=>x.name)).size} acts${mode==='saved'?' saved in this browser':' · official festival schedule'}`;
+$('#resultcount').textContent=`${items.length} sets · ${new Set(items.map(x=>x.name)).size} acts${mode==='saved'?(sharedPreview?' in shared schedule':' saved in this browser'):' · official festival schedule'}`;
 document.querySelectorAll('[data-mode]').forEach(b=>{b.classList.toggle('active',b.dataset.mode===mode);b.setAttribute('aria-pressed',b.dataset.mode===mode);});
 $('#venuelist').innerHTML=[['all','All venues',acts.length],...venues.filter(v=>acts.some(a=>a.venue===v[0])).map(v=>[v[0],v[0],acts.filter(a=>a.venue===v[0]).length])].map(([key,label,n])=>`<button class="venuebtn ${venue===key?'active':''}" data-venue="${esc(key)}" aria-pressed="${venue===key}">${esc(label)}<span>${String(n).padStart(2,'0')}</span></button>`).join('');
 $('#mobilevenue').value=venue;
@@ -47,6 +50,7 @@ if(mode==='venues'){$('#results').innerHTML=venues.filter(v=>items.some(a=>a.ven
 else{$('#results').innerHTML=`<section class="group timeline">${items.sort((a,b)=>minute(a.start)-minute(b.start)||a.venue.localeCompare(b.venue)).map(a=>card(a,true)).join('')}</section>`;}
 }
 $('#mobilevenue').innerHTML='<option value="all">All venues</option>'+venues.map(v=>`<option value="${esc(v[0])}">${esc(v[0])}</option>`).join('');
-document.addEventListener('click',e=>{const dayButton=e.target.closest('[data-day]');if(dayButton){switchDay(dayButton.dataset.day);return;}const save=e.target.closest('[data-save]'),v=e.target.closest('[data-venue]'),tab=e.target.closest('[data-mode]');if(save){const id=save.dataset.save;saved.has(id)?saved.delete(id):saved.add(id);try{localStorage.setItem('mutations26-saturday',JSON.stringify([...saved]));}catch{announce('Saved for this session. Browser storage is unavailable.');}render();document.querySelector(`[data-save="${id}"]`)?.focus();}if(v){venue=v.dataset.venue;if(mode==='saved')mode='venues';render();}if(tab){mode=tab.dataset.mode;render();}if(e.target.closest('#reset')){query='';venue='all';period='all';$('#search').value='';$('#period').value='all';if(mode==='saved'&&!acts.some(a=>saved.has(a.id)))mode='venues';render();}});
+document.addEventListener('click',e=>{const dayButton=e.target.closest('[data-day]');if(dayButton){switchDay(dayButton.dataset.day);return;}const save=e.target.closest('[data-save]'),v=e.target.closest('[data-venue]'),tab=e.target.closest('[data-mode]');if(save){const id=save.dataset.save;saved.has(id)?saved.delete(id):saved.add(id);if(!sharedPreview)persistSchedule();render();document.querySelector(`[data-save="${id}"]`)?.focus();}if(v){venue=v.dataset.venue;if(mode==='saved')mode='venues';render();}if(tab){mode=tab.dataset.mode;render();}if(e.target.closest('#reset')){query='';venue='all';period='all';$('#search').value='';$('#period').value='all';if(mode==='saved'&&!acts.some(a=>saved.has(a.id)))mode='venues';render();}});
 $('#search').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render();});$('#period').addEventListener('change',e=>{period=e.target.value;render();});$('#mobilevenue').addEventListener('change',e=>{venue=e.target.value;render();});$('#mydaytop').addEventListener('click',()=>{mode='saved';venue='all';period='all';query='';$('#search').value='';$('#period').value='all';render();$('.content').scrollIntoView({behavior:'smooth',block:'start'});});
+applyScheduleLink();
 render();
