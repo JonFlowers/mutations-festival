@@ -1,7 +1,7 @@
-# Mutations Festival Saturday guide
+# Mutations Festival guide
 
-An independent guide to Saturday 24 October 2026 in Brighton. Includes venue and chronological views, provisional community set times, artist listening notes, Spotify searches, saved acts and overlap warnings.
+Friday 23 and Saturday 24 October 2026, Brighton. Final stage times are from https://mutationsfestival.com/schedule and its full-size Friday and Saturday timetable images.
 
-Static HTML, CSS and JavaScript: publish `dist/`. No installation or build required.
+41 Friday sets across eight venues; 56 Saturday sets across ten venues. Select a day to explore its lineup, map and personal schedule. Saved sets persist in this browser with separate day views. After-midnight sets stay with their festival day.
 
-Times are from the community Clashfinder, not an official timetable. Source links and known differences are documented in the app. Data snapshot: 18 October 2026.
+Static site: serve dist/. No build required. Spotify links open artist searches. Walking times are estimates based on venue coordinates, not routed journeys, and exclude queues.
