@@ -23,7 +23,7 @@ function filtered(){return acts.filter(a=>(venue==='all'||a.venue===venue)&&(`${
 function render(){
 clearVenueMap();
 const day=festivalDays[selectedDay];
-$('#hero-title').innerHTML=`YOUR ${day.name.toUpperCase()}.<br>ALL OVER TOWN.`;
+$('#hero-title').innerHTML='MUTATIONS<br>FESTIVAL.';
 $('#stamp-day').textContent=day.name.toUpperCase();$('#stamp-date').textContent=day.date+'.10';
 $('#stamp').setAttribute('aria-label',`${day.name} ${day.date} October 2026`);
 $('#day-heading').textContent=`${day.name.toUpperCase()} / ${day.date} OCTOBER`;
