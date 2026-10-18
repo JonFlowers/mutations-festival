@@ -34,7 +34,7 @@ document.querySelectorAll('[data-day]').forEach(b=>{b.classList.toggle('active',
 $('#mobilevenue').innerHTML='<option value="all">All venues</option>'+venues.filter(v=>acts.some(a=>a.venue===v[0])).map(v=>`<option value="${esc(v[0])}">${esc(v[0])}</option>`).join('');
 const items=mode==='saved'?acts.filter(a=>saved.has(a.id)):filtered();
 $('.tools').hidden=mode==='saved';
-$('#mobilevenue').hidden=mode==='saved';$('#savedcount').textContent=acts.filter(a=>saved.has(a.id)).length;
+$('#mobilevenue').hidden=mode==='saved';$('#savedcount').textContent=allActs.filter(a=>saved.has(a.id)).length;
 $('#viewtitle').textContent=mode==='map'?'Find your way around':mode==='saved'?'My Schedule':mode==='time'?'From first set to last':venue==='all'?`The ${festivalDays[selectedDay].name} lineup`:venue;
 $('#resultcount').textContent=`${items.length} sets · ${new Set(items.map(x=>x.name)).size} acts${mode==='saved'?' saved in this browser':' · official festival schedule'}`;
 document.querySelectorAll('[data-mode]').forEach(b=>{b.classList.toggle('active',b.dataset.mode===mode);b.setAttribute('aria-pressed',b.dataset.mode===mode);});
