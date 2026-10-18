@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: mutations-saturday
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: ./dist
