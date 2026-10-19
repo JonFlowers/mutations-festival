@@ -22,7 +22,7 @@ function applyScheduleLink(){
   sharedPreview=true;saved=new Set(plan.ids);selectedDay=plan.day;acts=allActs.filter(a=>a.day===selectedDay);mode='saved';venue='all';query='';period='all';
  }catch(error){announce(error.message);}
 }
-function persistSchedule(){try{localStorage.setItem('mutations26-saturday',JSON.stringify([...saved]));return true;}catch{announce('Your schedule is available this session; browser storage is unavailable.');return false;}}
+function persistSchedule(){return persistNamedSchedules();}
 function dismissSharedLink(){if(typeof history!=='undefined')history.replaceState(null,'',location.pathname+location.search);}
 function saveSharedSchedule(){
  if(!sharedPreview)return;
