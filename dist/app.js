@@ -8,6 +8,7 @@ let selectedDay='saturday',saved;
 try { const day=localStorage.getItem('mutations26-day');if(festivalDays[day])selectedDay=day; }catch{}
 let acts=allActs.filter(a=>a.day===selectedDay);
 try { const data=JSON.parse(localStorage.getItem('mutations26-saturday')||'[]'); saved=new Set(Array.isArray(data)?data.filter(id=>allActs.some(a=>a.id===id)):[]); } catch {saved=new Set();}
+loadNamedSchedules();
 let mode='venues', venue='all', query='', period='all';
 function switchDay(day){
  if(!festivalDays[day])return;
@@ -22,6 +23,7 @@ function card(a,showVenue=false){const isSaved=saved.has(a.id), overlap=isSaved?
 function filtered(){return acts.filter(a=>(venue==='all'||a.venue===venue)&&(`${a.name} ${a.venue}`.toLowerCase().includes(query))&&(mode!=='saved'||saved.has(a.id))&&(period==='all'||period==='pending'&&a.pending||!a.pending&&(period==='afternoon'&&minute(a.start)<1080||period==='evening'&&minute(a.start)>=1080&&minute(a.start)<1320||period==='late'&&minute(a.start)>=1320)));}
 function render(){
 clearVenueMap();
+renderScheduleManager();
 $('#schedule-actions').hidden=mode!=='saved';
 $('#shared-plan').hidden=!sharedPreview;
 $('#share-schedule').disabled=!saved.size;
@@ -38,7 +40,7 @@ $('#mobilevenue').innerHTML='<option value="all">All venues</option>'+venues.fil
 const items=mode==='saved'?acts.filter(a=>saved.has(a.id)):filtered();
 $('.tools').hidden=mode==='saved';
 $('#mobilevenue').hidden=mode==='saved';$('#savedcount').textContent=allActs.filter(a=>saved.has(a.id)).length;
-$('#viewtitle').textContent=mode==='map'?'Find your way around':mode==='saved'?'My Schedule':mode==='time'?'From first set to last':venue==='all'?`The ${festivalDays[selectedDay].name} lineup`:venue;
+$('#viewtitle').textContent=mode==='map'?'Find your way around':mode==='saved'?(sharedPreview?'Shared schedule':activeSchedule().name):mode==='time'?'From first set to last':venue==='all'?`The ${festivalDays[selectedDay].name} lineup`:venue;
 $('#resultcount').textContent=`${items.length} sets · ${new Set(items.map(x=>x.name)).size} acts${mode==='saved'?(sharedPreview?' in shared schedule':' saved in this browser'):' · official festival schedule'}`;
 document.querySelectorAll('[data-mode]').forEach(b=>{b.classList.toggle('active',b.dataset.mode===mode);b.setAttribute('aria-pressed',b.dataset.mode===mode);});
 $('#venuelist').innerHTML=[['all','All venues',acts.length],...venues.filter(v=>acts.some(a=>a.venue===v[0])).map(v=>[v[0],v[0],acts.filter(a=>a.venue===v[0]).length])].map(([key,label,n])=>`<button class="venuebtn ${venue===key?'active':''}" data-venue="${esc(key)}" aria-pressed="${venue===key}">${esc(label)}<span>${String(n).padStart(2,'0')}</span></button>`).join('');
