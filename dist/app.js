@@ -23,6 +23,7 @@ function card(a,showVenue=false){const isSaved=saved.has(a.id), overlap=isSaved?
 function filtered(){return acts.filter(a=>(venue==='all'||a.venue===venue)&&(`${a.name} ${a.venue}`.toLowerCase().includes(query))&&(mode!=='saved'||saved.has(a.id))&&(period==='all'||period==='pending'&&a.pending||!a.pending&&(period==='afternoon'&&minute(a.start)<1080||period==='evening'&&minute(a.start)>=1080&&minute(a.start)<1320||period==='late'&&minute(a.start)>=1320)));}
 function render(){
 clearVenueMap();
+document.querySelectorAll('[data-schedule-view]').forEach(b=>{b.classList.toggle('active',b.dataset.scheduleView===myScheduleView);b.setAttribute('aria-pressed',b.dataset.scheduleView===myScheduleView);});
 renderScheduleManager();
 $('#schedule-actions').hidden=mode!=='saved';
 $('#shared-plan').hidden=!sharedPreview;
@@ -46,7 +47,7 @@ document.querySelectorAll('[data-mode]').forEach(b=>{b.classList.toggle('active'
 $('#venuelist').innerHTML=[['all','All venues',acts.length],...venues.filter(v=>acts.some(a=>a.venue===v[0])).map(v=>[v[0],v[0],acts.filter(a=>a.venue===v[0]).length])].map(([key,label,n])=>`<button class="venuebtn ${venue===key?'active':''}" data-venue="${esc(key)}" aria-pressed="${venue===key}">${esc(label)}<span>${String(n).padStart(2,'0')}</span></button>`).join('');
 $('#mobilevenue').value=venue;
 if(!items.length){$('#results').innerHTML=`<div class="empty"><strong>${mode==='saved'&&!acts.some(a=>saved.has(a.id))?'Make room for a new favourite.':'No sets match these filters.'}</strong><p>${mode==='saved'&&!acts.some(a=>saved.has(a.id))?'Tap ＋ My Schedule beside any act to plan your day.':'Try another venue, search or time of day.'}</p><button class="outline" id="reset">${mode==='saved'&&!acts.some(a=>saved.has(a.id))?'Explore the lineup':'Clear filters'}</button></div>`;return;}
-if(mode==='saved'){renderMySchedule(items);return;}
+if(mode==='saved'){if(myScheduleView==='map')renderScheduleRoute(items);else renderMySchedule(items);return;}
 if(mode==='map'){renderVenueMap(items);return;}
 if(mode==='venues'){$('#results').innerHTML=venues.filter(v=>items.some(a=>a.venue===v[0])).map(([name,street,note])=>`<section class="group"><header class="venuehead"><div><h3>${esc(name)}</h3><p>${esc(street)} &nbsp; / &nbsp; ${esc(note)}</p></div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name+' Brighton')}" target="_blank" rel="noopener" aria-label="Directions to ${esc(name)}">Directions ↗</a></header>${items.filter(a=>a.venue===name).sort((a,b)=>minute(a.start)-minute(b.start)).map(a=>card(a)).join('')}</section>`).join('');}
 else{$('#results').innerHTML=`<section class="group timeline">${items.sort((a,b)=>minute(a.start)-minute(b.start)||a.venue.localeCompare(b.venue)).map(a=>card(a,true)).join('')}</section>`;}
