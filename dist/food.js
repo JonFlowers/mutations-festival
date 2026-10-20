@@ -4,6 +4,100 @@ const foodPlaces=[
  {name:'Burger Brothers',address:'97 North Road',lat:50.8255651,lng:-0.137869,type:'Burgers · takeaway',open:720,close:1245,source:'https://www.burgerbrothersbrighton.co.uk/'},
  {name:'La Choza',address:'36 Gloucester Road',lat:50.826959,lng:-0.1394232,type:'Mexican street food · eat in or takeaway',open:690,close:1320,source:'https://lachoza.co.uk/'}
 ];
+// New address locations are approximate; confirm the walking route before travelling.
+foodPlaces.push(...[
+  {
+    "name": "Fatto a Mano — North Laine",
+    "address": "25 Gloucester Road",
+    "lat": 50.8271,
+    "lng": -0.1387,
+    "type": "Neapolitan pizza · eat in or collect · vegetarian options",
+    "open": 720,
+    "close": 1350,
+    "source": "https://www.fattoamanopizza.com/locations/north-laine-brighton/"
+  },
+  {
+    "name": "Pizza Pilgrims",
+    "address": "35 Ship Street",
+    "lat": 50.8223,
+    "lng": -0.1419,
+    "type": "Pizza · sit-down or takeaway · vegan options",
+    "open": 690,
+    "close": 1380,
+    "source": "https://www.pizzapilgrims.co.uk/pizzerias/brighton/"
+  },
+  {
+    "name": "Tortilla",
+    "address": "37 West Street",
+    "lat": 50.822,
+    "lng": -0.1444,
+    "type": "Burritos and bowls · quick takeaway or eat in",
+    "open": 660,
+    "close": 1380,
+    "source": "https://www.tortilla.co.uk/restaurants/brighton"
+  },
+  {
+    "name": "Beelzebab",
+    "address": "The Hope and Ruin, 11–12 Queens Road",
+    "lat": 50.8247825,
+    "lng": -0.1431387,
+    "venue": "The Hope and Ruin",
+    "type": "Vegan kebabs and loaded fries · inside The Hope and Ruin",
+    "open": 720,
+    "close": 1260,
+    "source": "https://www.beelzebab.com/"
+  },
+  {
+    "name": "itsu",
+    "address": "68–70 North Street",
+    "lat": 50.8236,
+    "lng": -0.1441,
+    "type": "Sushi, rice bowls and noodles · quick bite · plant-based options",
+    "open": 600,
+    "close": 1320,
+    "source": "https://www.itsu.com/location/south-east-england/brighton/"
+  },
+  {
+    "name": "German Doner Kebab",
+    "address": "51–52 North Street",
+    "lat": 50.8235,
+    "lng": -0.1435,
+    "type": "Doner kebabs and boxes · quick takeaway or eat in",
+    "open": 660,
+    "close": 1380,
+    "source": "https://www.gdk.com/us/gdk-locations?country=gb"
+  },
+  {
+    "name": "Kebab House",
+    "address": "61 West Street",
+    "lat": 50.8214,
+    "lng": -0.1448,
+    "type": "Kebabs and takeaway · late night until 05:00",
+    "open": 1020,
+    "close": 1740,
+    "source": "https://www.kebabhousebrighton.co.uk/"
+  },
+  {
+    "name": "Subway — West Street",
+    "address": "20 West Street",
+    "lat": 50.8229,
+    "lng": -0.1441,
+    "type": "Sandwiches, wraps and salads · late night until 05:00",
+    "open": 540,
+    "close": 1740,
+    "source": "https://restaurants.subway.com/united-kingdom/en/brighton/20-west-street"
+  },
+  {
+    "name": "The Flour Pot Bakery — Sydney Street",
+    "address": "40 Sydney Street",
+    "lat": 50.8263,
+    "lng": -0.1372,
+    "type": "Bakery, sandwiches and coffee · daytime café",
+    "open": null,
+    "close": null,
+    "source": "https://theflourpot.co.uk/pages/locations"
+  }
+]);
 let foodMealMinutes=30,foodBaseVenue=null;
 function foodWalk(a,b){
  const rad=x=>x*Math.PI/180,dlat=rad(b[0]-a[0]),dlon=rad(b[1]-a[1]);
@@ -19,22 +113,22 @@ function foodGaps(items){
  return blocks.slice(1).map((next,i)=>({start:blocks[i].end,end:next.start,from:blocks[i].after,to:next.before}));
 }
 function foodOptions(gap,meal=foodMealMinutes){
- return foodPlaces.map(place=>{
-  const point=[place.lat,place.lng],out=foodWalk(venueLocations[gap.from.venue],point),onward=foodWalk(point,venueLocations[gap.to.venue]);
+ return foodPlaces.filter(place=>Number.isFinite(place.open)&&Number.isFinite(place.close)).map(place=>{
+  const point=[place.lat,place.lng],out=place.venue===gap.from.venue?0:foodWalk(venueLocations[gap.from.venue],point),onward=place.venue===gap.to.venue?0:foodWalk(point,venueLocations[gap.to.venue]);
   const arrival=Math.max(gap.start+out,place.open),leave=arrival+meal,latestLeave=gap.end-onward-10;
   return {place,out,onward,arrival,leave,latestLeave,spare:latestLeave-leave,fits:leave<=place.close&&leave<=latestLeave};
  }).filter(x=>x.fits).sort((a,b)=>a.out-b.out||b.spare-a.spare);
 }
 function foodDirections(from,place){return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(from+' '+venueLocations[from][2]+' Brighton')+'&destination='+encodeURIComponent(place.name+' '+place.address+' Brighton')+'&travelmode=walking';}
 function foodPlaceCard(place,from,option){
- const walk=option?.out??foodWalk(venueLocations[from],[place.lat,place.lng]);
- return `<article class="food-place"><div><h4>${esc(place.name)}</h4><p>${esc(place.type)}<br>${esc(place.address)} · regular Fri/Sat ${scheduleClock(place.open)}–${scheduleClock(place.close)}</p>${option?`<p class="food-fit">Food stop ${scheduleClock(option.arrival)}–${scheduleClock(option.leave)} · ~${option.onward} min onward walk · ${option.spare} min spare after a 10 min venue buffer</p>`:''}<div class="links"><a href="${foodDirections(from,place)}" target="_blank" rel="noopener">Walk there ↗</a><a href="${place.source}" target="_blank" rel="noopener">Menu & check hours ↗</a></div></div><strong class="food-walk">~${walk}<span>min walk</span></strong></article>`;
+ const walk=option?.out??(place.venue===from?0:foodWalk(venueLocations[from],[place.lat,place.lng]));
+ return `<article class="food-place"><div><h4>${esc(place.name)}</h4><p>${esc(place.type)}<br>${esc(place.address)} · ${Number.isFinite(place.open)?`regular Fri/Sat ${scheduleClock(place.open)}–${scheduleClock(place.close)}`:'Hours unverified · check before visiting · not included in timed food suggestions'}</p>${option?`<p class="food-fit">Food stop ${scheduleClock(option.arrival)}–${scheduleClock(option.leave)} · ~${option.onward} min onward walk · ${option.spare} min spare after a 10 min venue buffer</p>`:''}<div class="links"><a href="${foodDirections(from,place)}" target="_blank" rel="noopener">Walk there ↗</a><a href="${place.source}" target="_blank" rel="noopener">Menu & check hours ↗</a></div></div><strong class="food-walk">~${walk}<span>min walk</span></strong></article>`;
 }
 function renderFood(items){
  const timed=scheduleLayout(items).timed,gaps=foodGaps(items),suggestions=gaps.map(g=>({gap:g,options:foodOptions(g)})).filter(x=>x.options.length);
  if(!foodBaseVenue||!venueLocations[foodBaseVenue])foodBaseVenue=timed[0]?.venue||venues[0][0];
  const nearby=foodPlaces.slice().sort((a,b)=>foodWalk(venueLocations[foodBaseVenue],[a.lat,a.lng])-foodWalk(venueLocations[foodBaseVenue],[b.lat,b.lng]));
- $('#results').innerHTML=`<section class="food-view"><div class="schedule-summary"><div><b>${suggestions.length}</b> food opportunities</div><div><b>${foodMealMinutes}</b> min to order & eat</div><div><b>10</b> min venue buffer</div></div><p class="schedule-help">Suggestions use gaps with no selected bands playing. Each allows for the walk from your previous venue, food, the onward walk and 10 minutes before the next set. Times are estimates; service and queues may take longer. Clashing picks are treated as occupied time, not food breaks.</p><label class="food-duration">Time to order and eat <select id="food-duration"><option value="20" ${foodMealMinutes===20?'selected':''}>20 min · quick bite</option><option value="30" ${foodMealMinutes===30?'selected':''}>30 min · food break</option><option value="45" ${foodMealMinutes===45?'selected':''}>45 min · longer meal</option><option value="60" ${foodMealMinutes===60?'selected':''}>60 min · relaxed meal</option></select></label><h3>When could we eat?</h3>${suggestions.length?suggestions.map(({gap,options})=>`<section class="food-window"><header><strong>${scheduleClock(gap.start)}–${scheduleClock(gap.end)}</strong><span>${gap.end-gap.start} min between bands</span></header><p>After <b>${esc(gap.from.name)}</b> at ${esc(gap.from.venue)}; before <b>${esc(gap.to.name)}</b> at ${esc(gap.to.venue)} (${gap.to.start}). Ranked by proximity to ${esc(gap.from.venue)}.</p>${foodPlaceCard(options[0].place,gap.from.venue,options[0])}${options.length>1?`<details><summary>${options.length-1} other nearby option${options.length>2?'s':''} that fit</summary>${options.slice(1).map(o=>foodPlaceCard(o.place,gap.from.venue,o)).join('')}</details>`:''}</section>`).join(''):`<div class="empty"><strong>${timed.length<2?'Choose at least two sets to find food gaps.':'No food stop fits these selections yet.'}</strong><p>${timed.length<2?'Nearby places are listed below.':'Try a shorter food break or leave a longer gap between bands. No recommendation is made when walking, eating and the venue buffer will not fit.'}</p></div>`}<h3>Food near where you are</h3><label class="food-location">Current venue <select id="food-origin">${venues.map(v=>`<option value="${esc(v[0])}" ${foodBaseVenue===v[0]?'selected':''}>${esc(v[0])}</option>`).join('')}</select></label><p class="schedule-help">Choose your venue manually; this does not use GPS. These nearby places are not a promise of being open now or of fitting the next set. Use the food windows above for schedule checks.</p>${nearby.map(p=>foodPlaceCard(p,foodBaseVenue)).join('')}<p class="schedule-help">A small curated selection, not an exhaustive food directory. Regular Friday/Saturday hours and addresses checked on the linked restaurant websites on 20 October 2026. Holiday hours, kitchen closing times, queues and availability may differ. Walking estimates use venue coordinates rather than street routing.</p></section>`;
+ $('#results').innerHTML=`<section class="food-view"><div class="schedule-summary"><div><b>${suggestions.length}</b> food opportunities</div><div><b>${foodMealMinutes}</b> min to order & eat</div><div><b>10</b> min venue buffer</div></div><p class="schedule-help">Suggestions use gaps with no selected bands playing. Each allows for the walk from your previous venue, food, the onward walk and 10 minutes before the next set. Times are estimates; service and queues may take longer. Clashing picks are treated as occupied time, not food breaks.</p><label class="food-duration">Time to order and eat <select id="food-duration"><option value="20" ${foodMealMinutes===20?'selected':''}>20 min · quick bite</option><option value="30" ${foodMealMinutes===30?'selected':''}>30 min · food break</option><option value="45" ${foodMealMinutes===45?'selected':''}>45 min · longer meal</option><option value="60" ${foodMealMinutes===60?'selected':''}>60 min · relaxed meal</option></select></label><h3>When could we eat?</h3>${suggestions.length?suggestions.map(({gap,options})=>`<section class="food-window"><header><strong>${scheduleClock(gap.start)}–${scheduleClock(gap.end)}</strong><span>${gap.end-gap.start} min between bands</span></header><p>After <b>${esc(gap.from.name)}</b> at ${esc(gap.from.venue)}; before <b>${esc(gap.to.name)}</b> at ${esc(gap.to.venue)} (${gap.to.start}). Ranked by proximity to ${esc(gap.from.venue)}.</p>${foodPlaceCard(options[0].place,gap.from.venue,options[0])}${options.length>1?`<details><summary>${options.length-1} other nearby option${options.length>2?'s':''} that fit</summary>${options.slice(1).map(o=>foodPlaceCard(o.place,gap.from.venue,o)).join('')}</details>`:''}</section>`).join(''):`<div class="empty"><strong>${timed.length<2?'Choose at least two sets to find food gaps.':'No food stop fits these selections yet.'}</strong><p>${timed.length<2?'Nearby places are listed below.':'Try a shorter food break or leave a longer gap between bands. No recommendation is made when walking, eating and the venue buffer will not fit.'}</p></div>`}<h3>Food near where you are · ${foodPlaces.length} places</h3><label class="food-location">Current venue <select id="food-origin">${venues.map(v=>`<option value="${esc(v[0])}" ${foodBaseVenue===v[0]?'selected':''}>${esc(v[0])}</option>`).join('')}</select></label><p class="schedule-help">Choose your venue manually; this does not use GPS. These nearby places are not a promise of being open now or of fitting the next set. Use the food windows above for schedule checks.</p>${nearby.map(p=>foodPlaceCard(p,foodBaseVenue)).join('')}<p class="schedule-help">A curated selection, not an exhaustive food directory. Addresses and available regular Friday/Saturday hours checked on the linked business websites on 20 October 2026. Places with unverified hours appear only in this nearby list, not in timed suggestions. Newly added locations use approximate address coordinates; confirm walking routes. Holiday hours, kitchen closing times, queues and availability may differ. Walking estimates use venue coordinates rather than street routing.</p></section>`;
 }
 document.addEventListener('change',event=>{
  if(event.target.id==='food-duration'){const value=Number(event.target.value);if([20,30,45,60].includes(value)){foodMealMinutes=value;render();}}
