@@ -8,3 +8,5 @@
 .video-player{display:block;width:100%;max-width:360px;aspect-ratio:9/16;border:0;margin:18px auto 12px;background:#000}@media print{.video-player{display:none}}
 
 .video-player.video-landscape{aspect-ratio:16/9;max-width:100%}
+
+#painkiller .artist-image img{object-position:center 85%}
