@@ -6,3 +6,5 @@
 .video-memory{background:var(--acid);padding:22px;margin-top:22px;border:1px solid var(--ink)}.video-memory .eyebrow{font-size:9px}.video-memory h4{font:600 29px/1.1 "Barlow Condensed",Impact,sans-serif;margin:12px 0}.video-memory p{font-size:11px;line-height:1.6}.video-memory>a{display:inline-block;background:var(--ink);color:var(--paper);border-radius:24px;padding:12px 18px;text-decoration:none;font-size:12px;margin-top:6px}
 
 .video-player{display:block;width:100%;max-width:360px;aspect-ratio:9/16;border:0;margin:18px auto 12px;background:#000}@media print{.video-player{display:none}}
+
+.video-player.video-landscape{aspect-ratio:16/9;max-width:100%}
